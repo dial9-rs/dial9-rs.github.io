@@ -1,0 +1,3 @@
+[submodule "themes/cela"]
+	path = themes/cela
+	url = https://github.com/edwardzcn-decade/cela

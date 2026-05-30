@@ -1,7 +1,66 @@
 base_url = "https://dial9-rs.github.io"
 title = "dial9-rs"
 description = "Open source Rust libraries and tools"
+default_language = "en"
+theme = "cela"
 compile_sass = false
-build_search_index = false
 generate_feeds = true
 feed_filenames = ["atom.xml"]
+build_search_index = true
+
+[search]
+index_format = "fuse_json"
+
+taxonomies = [
+  {name = "tags", feed = true},
+  {name = "categories", feed = true},
+]
+
+[markdown]
+render_emoji = true
+
+[markdown.highlighting]
+theme = "catppuccin-mocha"
+
+[extra]
+toc_open = false
+
+[extra.cela]
+header_title = "dial9-rs"
+icon = "logo.svg"
+icon_dark = "logo.svg"
+date_format = "%Y-%m-%d"
+show_home_title = true
+home_title = "dial9-rs"
+home_content_dir = "blog"
+home_list_style = "default"
+show_home_content = true
+home_content = "Open source Rust libraries and tools."
+show_home_social_icons = true
+social_icons = [
+  {path = "https://github.com/dial9-rs", title = "GitHub", icon = "github"},
+  {path = "/atom.xml", title = "RSS", icon = "rss"},
+]
+navigation = [
+  {path = "/", title = "Archive", title_key = "nav_archive"},
+  {path = "/tags", title = "Tags", title_key = "nav_tags"},
+  {path = "#", title = "Search", title_key = "nav_search", is_search = true},
+]
+show_cela_logo = false
+show_code_copy_buttons = true
+show_header_title = true
+show_post_meta = true
+show_reading_time = true
+show_scroll_to_top = true
+show_theme_toggle = true
+show_toc = true
+show_word_count = false
+
+[extra.cela.color]
+default_theme = "dark"
+remember_choice = true
+
+[extra.cela.global]
+title_show = true
+title_prefix = ""
+language_directions = { en = "ltr" }
