@@ -1,6 +1,6 @@
 base_url = "https://dial9-rs.github.io"
 title = "dial9-rs"
-description = "Open source Rust libraries and tools"
+description = "A microscope for Tokio and Rust applications"
 default_language = "en"
 theme = "cela"
 compile_sass = false
@@ -35,7 +35,7 @@ home_title = "dial9-rs"
 home_content_dir = "blog"
 home_list_style = "default"
 show_home_content = true
-home_content = "Open source Rust libraries and tools."
+home_content = "A microscope for Tokio and Rust applications. Record events cheaply, analyze them later, and make hard-to-debug problems obvious."
 show_home_social_icons = true
 social_icons = [
   {path = "https://github.com/dial9-rs", title = "GitHub", icon = "github"},
