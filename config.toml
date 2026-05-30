@@ -1,0 +1,7 @@
+base_url = "https://dial9-rs.github.io"
+title = "dial9-rs"
+description = "Open source Rust libraries and tools"
+compile_sass = false
+build_search_index = false
+generate_feeds = true
+feed_filenames = ["atom.xml"]

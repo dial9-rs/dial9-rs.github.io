@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Blog | {{ config.title }}{% endblock %}
+{% block content %}
+<h1>Blog</h1>
+{% for page in section.pages %}
+<article>
+    <time datetime="{{ page.date }}">{{ page.date }}</time>
+    <h2><a href="{{ page.permalink }}">{{ page.title }}</a></h2>
+</article>
+{% endfor %}
+{% endblock %}
