@@ -57,6 +57,7 @@ show_reading_time = true
 show_scroll_to_top = true
 show_theme_toggle = true
 show_toc = true
+unfold_toc = true
 show_word_count = false
 
 [extra.cela.color]
