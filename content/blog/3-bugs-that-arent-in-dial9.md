@@ -1,8 +1,6 @@
 +++
 title = "3 bugs that aren't in dial9"
 date = 2026-05-30
-[taxonomies]
-tags = ["bugs", "concurrency", "ai"]
 +++
 
 [dial9](https://github.com/dial9-rs/dial9) is a microscope for Tokio (and Rust applications in general): its compact binary format can record a log of runtime events so you can reconstruct what actually happened to understand bugs and performance behavior. It runs in production, where bugs have real blast radius.
