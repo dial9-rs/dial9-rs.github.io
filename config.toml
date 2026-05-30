@@ -20,6 +20,7 @@ taxonomies = [
 render_emoji = true
 
 [markdown.highlighting]
+highlight_code = true
 theme = "catppuccin-mocha"
 
 [extra]
