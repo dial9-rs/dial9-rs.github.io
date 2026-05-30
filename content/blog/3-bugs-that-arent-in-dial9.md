@@ -8,13 +8,15 @@ authors = ["Russell Cohen"]
 
 As much as we attempt to avoid it, dial9 still has bugs. We catch most in CI, some in PR review, and some are discovered by customers.
 
-We use AI to help build dial9, bug this presents a challenge: today's models are jagged: strong in one domain, weak in another. Folks are probably familiar with "*How many r's are in Strawberry*" or "*I want to wash my car, the car wash is 50m away. Should I walk or drive?*" These are real but don't really capture what this looks like in an Here are three examples we hit building dial9.
+We use AI to help build dial9, but this presents a challenge: today's models are jagged: strong in one domain, weak in another. Folks are probably familiar with "*How many r's are in Strawberry*" or "*I want to wash my car, the car wash is 50m away. Should I walk or drive?*" These are real but don't really capture what this looks like in practice. Here are three examples we hit building dial9.
 
 <!-- more -->
 
 ## FxHash
 
-dial9 uses a fast but cryptographically insecure algorithm called FxHash for certain encoding operations. I told the agent to inline the code from the much larger [FxHash crate](https://crates.io/crates/fxhash) because we only needed ~10 lines:
+dial9 uses a fast but cryptographically insecure algorithm called FxHash for certain encoding operations. Rather than adding a dependency, the the agent to inlined the code from the [FxHash crate](https://crates.io/crates/fxhash) because we only needed ~10 lines:
+
+> This was definitely an error on my part; this whole episode would have been avoided by `rustc-hash = 2`.
 
 ```rust
 impl Hasher for FxHasher {
