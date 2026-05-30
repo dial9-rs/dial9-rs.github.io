@@ -38,7 +38,7 @@ home_title = "dial9-rs"
 home_content_dir = "blog"
 home_list_style = "default"
 show_home_content = true
-home_content = "A microscope for Tokio and Rust applications. Record events cheaply, analyze them later, and make hard-to-debug problems obvious."
+home_content = "A microscope for Tokio and Rust applications. Record events cheaply, analyze them later, and make hard-to-debug problems obvious. [View on GitHub](https://github.com/dial9-rs/dial9)."
 show_home_social_icons = true
 social_icons = [
   {path = "https://github.com/dial9-rs", title = "GitHub", icon = "github"},
