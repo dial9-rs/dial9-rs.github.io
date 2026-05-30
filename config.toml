@@ -26,6 +26,9 @@ theme = "catppuccin-mocha"
 toc_open = false
 
 [extra.cela]
+favicon = "favicon.ico"
+favicon16x16 = "favicon-16x16.png"
+favicon32x32 = "favicon-32x32.png"
 header_title = "dial9-rs"
 icon = "logo.svg"
 icon_dark = "logo.svg"
