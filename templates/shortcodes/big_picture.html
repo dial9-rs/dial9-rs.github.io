@@ -1,0 +1,195 @@
+<div class="d9big">
+<style>
+  .d9big {
+    --d9big-accent: #0e7c66;
+    --d9big-ink: #1a202c;
+    --d9big-muted: #718096;
+    font-family: "Helvetica Neue", -apple-system, system-ui, sans-serif;
+    color: var(--d9big-ink);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 1.5em 0;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .d9big-title { font-size: 16px; font-weight: 700; margin: 0 0 3px; letter-spacing: -0.01em; }
+  .d9big-hint { font-size: 11px; color: var(--d9big-muted); margin: 0 0 14px; }
+  .d9big-flow { display: flex; align-items: stretch; gap: 6px; }
+  a.d9big-stage {
+    flex: 1 1 0; min-width: 0; display: flex; flex-direction: column;
+    border: 1px solid #94a3b8; background: #f8fafc;
+    padding: 9px 10px 8px; box-sizing: border-box;
+    text-decoration: none; color: inherit;
+    transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+  }
+  a.d9big-stage:hover, a.d9big-stage:focus-visible {
+    border-color: var(--d9big-accent);
+    box-shadow: 0 2px 6px rgba(14, 124, 102, 0.16);
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+  .d9big-stage b { display: block; font-size: 12.5px; font-weight: 700; }
+  .d9big-stage b i { font-style: normal; color: var(--d9big-accent); }
+  .d9big-sub { display: block; font-size: 10.5px; color: var(--d9big-muted); margin: 2px 0 8px; }
+  /* Mini-diagram area fills leftover space so all three stages align. */
+  .d9big-mini { flex: 1; display: flex; flex-direction: column; justify-content: center; margin-bottom: 8px; }
+  .d9big-jump {
+    margin-top: auto; display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; color: var(--d9big-accent);
+  }
+  a.d9big-stage:hover .d9big-jump span,
+  a.d9big-stage:focus-visible .d9big-jump span { text-decoration: underline; }
+
+  /* stage 1: threads into the queue */
+  .d9big-th { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+  .d9big-th i { font-style: normal; font-size: 9px; color: #334155; width: 42px; flex-shrink: 0; }
+  .d9big-fill { flex: 1; height: 7px; background: #e2e8f0; overflow: hidden; }
+  .d9big-fill > span { display: block; height: 100%; background: var(--d9big-accent); }
+  .d9big-down { display: block; margin: 1px auto 2px; }
+  .d9big-q { display: flex; height: 15px; border: 1px solid #94a3b8; box-sizing: border-box; }
+  .d9big-q i {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    font-style: normal; font-size: 8px; font-weight: 600; color: #334155;
+    background: #fff; border-right: 1px solid #cbd5e0; box-sizing: border-box;
+  }
+  .d9big-q i:last-child { border-right: none; }
+  .d9big-q i.d9big-full { background: #f1f5f9; border-right-color: #94a3b8; }
+
+  /* stage 2: byte-stream row */
+  .d9big-row { display: flex; height: 20px; border: 1px solid #94a3b8; box-sizing: border-box; }
+  .d9big-row i {
+    display: flex; align-items: center; justify-content: center;
+    font-style: normal; font-size: 8px; font-weight: 600;
+    background: #f1f5f9; color: #334155;
+    border-right: 1px solid #94a3b8; box-sizing: border-box;
+    overflow: hidden; white-space: nowrap;
+  }
+  .d9big-row i:last-child { border-right: none; }
+  .d9big-hdr { background: #4a5568 !important; color: #fff !important; }
+  .d9big-schema { background: #dbeafe !important; color: #1e40af !important; }
+  .d9big-evt { background: #eff6ff !important; color: #1e40af !important; }
+  .d9big-pool { background: #fef3c7 !important; color: #92400e !important; }
+
+  /* stage 3: off-host hops */
+  .d9big-ship { display: flex; align-items: center; gap: 4px; }
+  .d9big-ship i {
+    font-style: normal; flex: 1; min-width: 0; text-align: center;
+    border: 1px solid #94a3b8; background: #fff; box-sizing: border-box;
+    padding: 4px 0; font-size: 8px; color: #334155;
+    overflow: hidden; white-space: nowrap;
+  }
+  .d9big-ship i.d9big-dst {
+    border-color: var(--d9big-accent); background: #e6f4f1;
+    color: #0b5c4c; font-weight: 600;
+  }
+  .d9big-hop { flex-shrink: 0; }
+
+  .d9big-arrow { flex-shrink: 0; align-self: center; }
+
+  /* sources: not a numbered stage, just where events come from */
+  a.d9big-srcs {
+    flex: 0.55 1 0; min-width: 0; display: flex; flex-direction: column;
+    border: 1px dashed #94a3b8; background: #fff;
+    padding: 9px 10px 8px; box-sizing: border-box;
+    text-decoration: none; color: inherit;
+    transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+  }
+  a.d9big-srcs:hover, a.d9big-srcs:focus-visible {
+    border-color: var(--d9big-accent);
+    box-shadow: 0 2px 6px rgba(14, 124, 102, 0.16);
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+  a.d9big-srcs:hover .d9big-jump span,
+  a.d9big-srcs:focus-visible .d9big-jump span { text-decoration: underline; }
+  a.d9big-srcs .d9big-jump { font-size: 9px; }
+  .d9big-srcs b { display: block; font-size: 12.5px; font-weight: 700; color: var(--d9big-muted); }
+  .d9big-srclist { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 3px; margin-top: 6px; }
+  .d9big-srclist i {
+    font-style: normal; font-size: 9.5px; color: #334155;
+    border: 1px solid #cbd5e0; background: #f8fafc;
+    padding: 2px 6px; text-align: center;
+    overflow: hidden; white-space: nowrap;
+  }
+  .d9big-srclist i:last-child { border: none; background: none; color: var(--d9big-muted); padding: 0; }
+
+  /* Stack before the stages get too narrow for their labels; this also
+     covers the <=560px mobile case. */
+  @media (max-width: 700px) {
+    .d9big { padding: 16px; }
+    .d9big-flow { flex-direction: column; }
+    .d9big-arrow { transform: rotate(90deg); margin: 2px 0; }
+    .d9big-mini { margin: 4px 0 8px; }
+  }
+</style>
+
+<div class="d9big-title">dial9, end to end</div>
+<p class="d9big-hint">click a stage to jump to its section</p>
+
+<div class="d9big-flow">
+  <a class="d9big-srcs" href="#data-sources">
+    <b>sources</b>
+    <div class="d9big-srclist">
+      <i>tokio runtime</i>
+      <i>CPU profiler</i>
+      <i>allocations</i>
+      <i>···</i>
+    </div>
+    <span class="d9big-jump"><svg width="7" height="8" viewBox="0 0 7 8" aria-hidden="true"><polygon points="0.5,0 6.5,4 0.5,8" fill="currentColor"/></svg><span>jump to section</span></span>
+  </a>
+
+  <svg class="d9big-arrow" width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><line x1="0" y1="6" x2="10" y2="6" stroke="#94a3b8" stroke-width="1.5"/><polygon points="9,2 9,10 16,6" fill="#94a3b8"/></svg>
+
+  <a class="d9big-stage" href="#the-dial9-trace-format">
+    <b><i>1</i> Encode</b>
+    <span class="d9big-sub">events serialized at the call site; ~14 B vs ~245 B as JSON</span>
+    <div class="d9big-mini">
+      <div class="d9big-row">
+        <i class="d9big-hdr" style="width:14%">hdr</i>
+        <i class="d9big-schema" style="width:26%">SCHEMA</i>
+        <i class="d9big-pool" style="width:16%">pool</i>
+        <i class="d9big-evt" style="width:15%">EVT</i>
+        <i class="d9big-evt" style="width:15%">EVT</i>
+        <i style="flex:1">···</i>
+      </div>
+    </div>
+    <span class="d9big-jump"><svg width="7" height="8" viewBox="0 0 7 8" aria-hidden="true"><polygon points="0.5,0 6.5,4 0.5,8" fill="currentColor"/></svg><span>jump to section</span></span>
+  </a>
+
+  <svg class="d9big-arrow" width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><line x1="0" y1="6" x2="10" y2="6" stroke="#94a3b8" stroke-width="1.5"/><polygon points="9,2 9,10 16,6" fill="#94a3b8"/></svg>
+
+  <a class="d9big-stage" href="#dial9-core-the-event-bus-and-central-collector">
+    <b><i>2</i> Collect</b>
+    <span class="d9big-sub">thread-local buffers, epoch-flushed into a lock-free queue</span>
+    <div class="d9big-mini">
+      <div class="d9big-th"><i>thread 0</i><div class="d9big-fill"><span style="width:72%"></span></div></div>
+      <div class="d9big-th"><i>thread 1</i><div class="d9big-fill"><span style="width:45%"></span></div></div>
+      <div class="d9big-th"><i>thread 2</i><div class="d9big-fill"><span style="width:23%"></span></div></div>
+      <svg class="d9big-down" width="10" height="11" viewBox="0 0 10 11" aria-hidden="true"><line x1="5" y1="0" x2="5" y2="6" stroke="#94a3b8" stroke-width="1.5"/><polygon points="1.5,5.5 8.5,5.5 5,11" fill="#94a3b8"/></svg>
+      <div class="d9big-q">
+        <i class="d9big-full">1</i><i class="d9big-full">0</i><i class="d9big-full">0</i><i class="d9big-full">2</i><i></i><i></i><i></i><i></i>
+      </div>
+    </div>
+    <span class="d9big-jump"><svg width="7" height="8" viewBox="0 0 7 8" aria-hidden="true"><polygon points="0.5,0 6.5,4 0.5,8" fill="currentColor"/></svg><span>jump to section</span></span>
+  </a>
+
+  <svg class="d9big-arrow" width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><line x1="0" y1="6" x2="10" y2="6" stroke="#94a3b8" stroke-width="1.5"/><polygon points="9,2 9,10 16,6" fill="#94a3b8"/></svg>
+
+  <a class="d9big-stage" href="#finishing-traces-getting-them-off-host">
+    <b><i>3</i> Ship</b>
+    <span class="d9big-sub">segments symbolized, gzipped, uploaded to S3</span>
+    <div class="d9big-mini">
+      <div class="d9big-ship">
+        <i style="flex:1.5">symbolize</i>
+        <svg class="d9big-hop" width="11" height="10" viewBox="0 0 11 10" aria-hidden="true"><line x1="0" y1="5" x2="6" y2="5" stroke="#94a3b8" stroke-width="1.5"/><polygon points="5.5,1.5 5.5,8.5 11,5" fill="#94a3b8"/></svg>
+        <i>gzip</i>
+        <svg class="d9big-hop" width="11" height="10" viewBox="0 0 11 10" aria-hidden="true"><line x1="0" y1="5" x2="6" y2="5" stroke="#94a3b8" stroke-width="1.5"/><polygon points="5.5,1.5 5.5,8.5 11,5" fill="#94a3b8"/></svg>
+        <i class="d9big-dst">S3</i>
+      </div>
+    </div>
+    <span class="d9big-jump"><svg width="7" height="8" viewBox="0 0 7 8" aria-hidden="true"><polygon points="0.5,0 6.5,4 0.5,8" fill="currentColor"/></svg><span>jump to section</span></span>
+  </a>
+</div>
+</div>
