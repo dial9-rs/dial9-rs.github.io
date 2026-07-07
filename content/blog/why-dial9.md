@@ -3,6 +3,9 @@ title = "dial9: A flight recorder for Rust"
 date = 2026-06-04
 authors = ["Russell Cohen"]
 +++
+
+> Diagrams by Fable, text by me.
+
 Many performance and correctness problems are easy to solve with enough data. If you can see an exhaustive
 ordered log of everything that happened, hard problems tend to become shallow. Trying to figure out what is different about P99 requests vs. P50? If you record all spans from your application, kernel events, and have always-on profiling, it makes it possible to analyze the traces to understand what's going on. These traces are designed to be analyzed programmatically, not just by squinting at a flamegraph. But that's a lot of data.
 

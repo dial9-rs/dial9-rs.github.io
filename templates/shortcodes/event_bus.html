@@ -1,122 +1,338 @@
 <div class="d9bus">
-<style>
-  .d9bus {
-    --d9bus-accent: #0e7c66;
-    --d9bus-ink: #1a202c;
-    --d9bus-muted: #718096;
-    font-family: "Helvetica Neue", -apple-system, system-ui, sans-serif;
-    color: var(--d9bus-ink);
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 20px 24px;
-    margin: 1.5em 0;
-    font-size: 12px;
-    line-height: 1.3;
-  }
-  .d9bus-title { font-size: 16px; font-weight: 700; margin: 0 0 14px; letter-spacing: -0.01em; }
-  .d9bus-label { font-size: 11px; font-weight: 700; margin: 0 0 5px; }
-  .d9bus-label em { font-style: normal; font-weight: 400; color: var(--d9bus-muted); }
-  .d9bus-cols { display: flex; gap: 12px; }
-  .d9bus-tl { flex: 1; border: 1px solid #94a3b8; background: #f8fafc; padding: 7px 10px 9px; }
-  .d9bus-tl b { font-size: 12px; font-weight: 600; display: block; margin-bottom: 5px; }
-  .d9bus-tl b small { font-weight: 400; color: var(--d9bus-muted); }
-  .d9bus-fill { height: 9px; background: #e2e8f0; overflow: hidden; }
-  .d9bus-fill > div { height: 100%; background: var(--d9bus-accent); }
-  .d9bus-idle { border-style: dashed; }
-  .d9bus-idle .d9bus-fill > div { background: #f59e0b; }
-  .d9bus-converge { display: block; width: 100%; height: 34px; }
-  .d9bus-alabels { display: flex; gap: 12px; margin: 2px 0 4px; }
-  .d9bus-alabels span { flex: 1; text-align: center; font-size: 10px; color: var(--d9bus-muted); }
-  .d9bus-qwrap { display: flex; justify-content: center; }
-  .d9bus-queue { width: 240px; border: 1px solid #94a3b8; box-sizing: border-box; }
-  .d9bus-qslot {
-    height: 24px; border-bottom: 1px solid #cbd5e0; box-sizing: border-box;
-    display: flex; align-items: center; padding: 0 3px; background: #fff;
-  }
-  .d9bus-qslot:last-child { border-bottom: none; }
-  .d9bus-batch {
-    height: 16px; background: #cbd5e0; color: #1e293b;
-    display: flex; align-items: center; padding-left: 5px;
-    font-size: 10px; font-weight: 600;
-  }
-  .d9bus-batch.d9bus-tiny { background: #fcd34d; padding-left: 3px; }
-  .d9bus-varrow { display: flex; flex-direction: column; align-items: center; gap: 1px; margin: 2px 0; }
-  .d9bus-varrow span { font-size: 10px; color: var(--d9bus-muted); }
-  .d9bus-reader { display: flex; justify-content: center; }
-  .d9bus-reader > div {
-    width: 240px; box-sizing: border-box; text-align: center; padding: 6px 8px;
-    border: 1px solid var(--d9bus-accent); background: #e6f4f1; color: #0b5c4c;
-    font-weight: 600; font-size: 12px;
-  }
-  .d9bus-seg { display: flex; height: 34px; border: 1px solid #94a3b8; box-sizing: border-box; margin-top: 0; }
-  .d9bus-seg > div {
-    display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap;
-    border-right: 1px solid #94a3b8; box-sizing: border-box;
-    background: #f1f5f9; color: #334155; font-size: 11px;
-  }
-  .d9bus-seg > div:last-child { border-right: none; }
-  .d9bus-seg .d9bus-hdr { background: #4a5568; color: #fff; }
-  .d9bus-seg .d9bus-t2 { background: #fef3c7; }
-  .d9bus-seg .d9bus-empty { background: #fff; border-left: 1px dashed #cbd5e0; border-right: none; }
-  @media (max-width: 560px) {
-    .d9bus-cols { flex-direction: column; }
-    .d9bus-converge, .d9bus-alabels { display: none; }
-    .d9bus-queue, .d9bus-reader > div { width: 100%; }
-  }
-</style>
+    <style>
+        .d9bus {
+            --d9bus-accent: #0e7c66;
+            --d9bus-ink: #1a202c;
+            --d9bus-muted: #718096;
+            font-family:
+                "Helvetica Neue",
+                -apple-system,
+                system-ui,
+                sans-serif;
+            color: var(--d9bus-ink);
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 1.5em 0;
+            font-size: 12px;
+            line-height: 1.3;
+        }
+        .d9bus-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 14px;
+            letter-spacing: -0.01em;
+        }
+        .d9bus-label {
+            font-size: 11px;
+            font-weight: 700;
+            margin: 0 0 5px;
+        }
+        .d9bus-label em {
+            font-style: normal;
+            font-weight: 400;
+            color: var(--d9bus-muted);
+        }
+        .d9bus-cols {
+            display: flex;
+            gap: 12px;
+        }
+        .d9bus-tl {
+            flex: 1;
+            border: 1px solid #94a3b8;
+            background: #f8fafc;
+            padding: 7px 10px 9px;
+        }
+        .d9bus-tl b {
+            font-size: 12px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .d9bus-tl b small {
+            font-weight: 400;
+            color: var(--d9bus-muted);
+        }
+        .d9bus-fill {
+            height: 9px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+        .d9bus-fill > div {
+            height: 100%;
+            background: var(--d9bus-accent);
+        }
+        .d9bus-idle {
+            border-style: dashed;
+        }
+        .d9bus-idle .d9bus-fill > div {
+            background: #f59e0b;
+        }
+        .d9bus-converge {
+            display: block;
+            width: 100%;
+            height: 34px;
+        }
+        .d9bus-alabels {
+            display: flex;
+            gap: 12px;
+            margin: 2px 0 4px;
+        }
+        .d9bus-alabels span {
+            flex: 1;
+            text-align: center;
+            font-size: 10px;
+            color: var(--d9bus-muted);
+        }
+        .d9bus-qwrap {
+            display: flex;
+            justify-content: center;
+        }
+        .d9bus-queue {
+            width: 240px;
+            border: 1px solid #94a3b8;
+            box-sizing: border-box;
+        }
+        .d9bus-qslot {
+            height: 24px;
+            border-bottom: 1px solid #cbd5e0;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            padding: 0 3px;
+            background: #fff;
+        }
+        .d9bus-qslot:last-child {
+            border-bottom: none;
+        }
+        .d9bus-batch {
+            height: 16px;
+            background: #cbd5e0;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            padding-left: 5px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .d9bus-batch.d9bus-tiny {
+            background: #fcd34d;
+            padding-left: 3px;
+        }
+        .d9bus-varrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            margin: 2px 0;
+        }
+        .d9bus-varrow span {
+            font-size: 10px;
+            color: var(--d9bus-muted);
+        }
+        .d9bus-reader {
+            display: flex;
+            justify-content: center;
+        }
+        .d9bus-reader > div {
+            width: 240px;
+            box-sizing: border-box;
+            text-align: center;
+            padding: 6px 8px;
+            border: 1px solid var(--d9bus-accent);
+            background: #e6f4f1;
+            color: #0b5c4c;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .d9bus-seg {
+            display: flex;
+            height: 34px;
+            border: 1px solid #94a3b8;
+            box-sizing: border-box;
+            margin-top: 0;
+        }
+        .d9bus-seg > div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 1px solid #94a3b8;
+            box-sizing: border-box;
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 11px;
+        }
+        .d9bus-seg > div:last-child {
+            border-right: none;
+        }
+        .d9bus-seg .d9bus-hdr {
+            background: #4a5568;
+            color: #fff;
+        }
+        .d9bus-seg .d9bus-t2 {
+            background: #fef3c7;
+        }
+        .d9bus-seg .d9bus-empty {
+            background: #fff;
+            border-left: 1px dashed #cbd5e0;
+            border-right: none;
+        }
+        @media (max-width: 560px) {
+            .d9bus-cols {
+                flex-direction: column;
+            }
+            .d9bus-converge,
+            .d9bus-alabels {
+                display: none;
+            }
+            .d9bus-queue,
+            .d9bus-reader > div {
+                width: 100%;
+            }
+        }
+    </style>
 
-<div class="d9bus-title">From thread-local buffer to segment</div>
+    <div class="d9bus-title">From thread-local buffer to segment</div>
 
-<div class="d9bus-label">thread-local buffers <em>· 1 MB each, events encoded in place; every push checks the global epoch counter</em></div>
-<div class="d9bus-cols">
-  <div class="d9bus-tl"><b>thread 0</b><div class="d9bus-fill"><div style="width:72%"></div></div></div>
-  <div class="d9bus-tl"><b>thread 1</b><div class="d9bus-fill"><div style="width:45%"></div></div></div>
-  <div class="d9bus-tl d9bus-idle"><b>thread 2 <small>· idle</small></b><div class="d9bus-fill"><div style="width:8%"></div></div></div>
-</div>
+    <div class="d9bus-label">
+        thread-local buffers
+        <em
+            >· 1 MB each, events encoded in place; every push checks the global
+            epoch counter</em
+        >
+    </div>
+    <div class="d9bus-cols">
+        <div class="d9bus-tl">
+            <b>thread 0</b>
+            <div class="d9bus-fill"><div style="width: 72%"></div></div>
+        </div>
+        <div class="d9bus-tl">
+            <b>thread 1</b>
+            <div class="d9bus-fill"><div style="width: 45%"></div></div>
+        </div>
+        <div class="d9bus-tl d9bus-idle">
+            <b>thread 2 <small>· idle</small></b>
+            <div class="d9bus-fill"><div style="width: 8%"></div></div>
+        </div>
+    </div>
 
-<div class="d9bus-alabels">
-  <span>self-flush on epoch tick</span>
-  <span>self-flush on epoch tick</span>
-  <span>pulled by the flusher 5 ms later</span>
-</div>
-<svg class="d9bus-converge" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true">
-  <line x1="16.6" y1="0" x2="50" y2="12" stroke="#94a3b8" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
-  <line x1="50" y1="0" x2="50" y2="12" stroke="#94a3b8" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
-  <line x1="83.3" y1="0" x2="50" y2="12" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
-</svg>
-<div style="display:flex;justify-content:center;margin:0 0 2px"><svg width="14" height="8" viewBox="0 0 14 8" aria-hidden="true"><polygon points="2.5,0 11.5,0 7,8" fill="#94a3b8"/></svg></div>
+    <div class="d9bus-alabels">
+        <span>self-flush on epoch tick</span>
+        <span>self-flush on epoch tick</span>
+        <span>pulled by the flusher 5 ms later</span>
+    </div>
+    <svg
+        class="d9bus-converge"
+        viewBox="0 0 100 12"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+    >
+        <line
+            x1="16.6"
+            y1="0"
+            x2="50"
+            y2="12"
+            stroke="#94a3b8"
+            stroke-width="1.5"
+            vector-effect="non-scaling-stroke"
+        />
+        <line
+            x1="50"
+            y1="0"
+            x2="50"
+            y2="12"
+            stroke="#94a3b8"
+            stroke-width="1.5"
+            vector-effect="non-scaling-stroke"
+        />
+        <line
+            x1="83.3"
+            y1="0"
+            x2="50"
+            y2="12"
+            stroke="#f59e0b"
+            stroke-width="1.5"
+            stroke-dasharray="4,3"
+            vector-effect="non-scaling-stroke"
+        />
+    </svg>
+    <div style="display: flex; justify-content: center; margin: 0 0 2px">
+        <svg width="14" height="8" viewBox="0 0 14 8" aria-hidden="true">
+            <polygon points="2.5,0 11.5,0 7,8" fill="#94a3b8" />
+        </svg>
+    </div>
 
-<div class="d9bus-qwrap">
-  <div style="width:130px" aria-hidden="true"></div>
-  <div class="d9bus-queue">
-    <div class="d9bus-qslot"></div>
-    <div class="d9bus-qslot"></div>
-    <div class="d9bus-qslot"><div class="d9bus-batch d9bus-tiny" style="width:8%"></div></div>
-    <div class="d9bus-qslot"><div class="d9bus-batch" style="width:45%">1</div></div>
-    <div class="d9bus-qslot"><div class="d9bus-batch" style="width:72%">0</div></div>
-  </div>
-  <div class="d9bus-label" style="align-self:center;margin-left:10px;width:120px;margin-bottom:0">ArrayQueue<br><em>lock-free, MPSC</em></div>
-</div>
+    <div class="d9bus-qwrap">
+        <div style="width: 130px" aria-hidden="true"></div>
+        <div class="d9bus-queue">
+            <div class="d9bus-qslot"></div>
+            <div class="d9bus-qslot"></div>
+            <div class="d9bus-qslot">
+                <div class="d9bus-batch d9bus-tiny" style="width: 8%"></div>
+            </div>
+            <div class="d9bus-qslot">
+                <div class="d9bus-batch" style="width: 45%">1</div>
+            </div>
+            <div class="d9bus-qslot">
+                <div class="d9bus-batch" style="width: 72%">0</div>
+            </div>
+        </div>
+        <div
+            class="d9bus-label"
+            style="
+                align-self: center;
+                margin-left: 10px;
+                width: 120px;
+                margin-bottom: 0;
+            "
+        >
+            ArrayQueue<br /><em>ring buffer drops oldest data on overflow</em>
+        </div>
+    </div>
 
-<div class="d9bus-varrow">
-  <svg width="14" height="22" viewBox="0 0 14 22" aria-hidden="true"><line x1="7" y1="0" x2="7" y2="15" stroke="#94a3b8" stroke-width="1.5"/><polygon points="2.5,14 11.5,14 7,22" fill="#94a3b8"/></svg>
-  <span>pops oldest first</span>
-</div>
+    <div class="d9bus-varrow">
+        <svg width="14" height="22" viewBox="0 0 14 22" aria-hidden="true">
+            <line
+                x1="7"
+                y1="0"
+                x2="7"
+                y2="15"
+                stroke="#94a3b8"
+                stroke-width="1.5"
+            />
+            <polygon points="2.5,14 11.5,14 7,22" fill="#94a3b8" />
+        </svg>
+        <span>pops oldest first</span>
+    </div>
 
-<div class="d9bus-reader"><div>flush thread — the single reader</div></div>
+    <div class="d9bus-reader"><div>flush thread</div></div>
 
-<div class="d9bus-varrow">
-  <svg width="14" height="22" viewBox="0 0 14 22" aria-hidden="true"><line x1="7" y1="0" x2="7" y2="15" stroke="#94a3b8" stroke-width="1.5"/><polygon points="2.5,14 11.5,14 7,22" fill="#94a3b8"/></svg>
-  <span>appends each batch</span>
-</div>
+    <div class="d9bus-varrow">
+        <svg width="14" height="22" viewBox="0 0 14 22" aria-hidden="true">
+            <line
+                x1="7"
+                y1="0"
+                x2="7"
+                y2="15"
+                stroke="#94a3b8"
+                stroke-width="1.5"
+            />
+            <polygon points="2.5,14 11.5,14 7,22" fill="#94a3b8" />
+        </svg>
+        <span>appends each batch</span>
+    </div>
 
-<div class="d9bus-label">segment buffer <em>· widths show how much data each thread had</em></div>
-<div class="d9bus-seg">
-  <div class="d9bus-hdr" style="width:8%">header</div>
-  <div style="width:38%">batch · thread 0</div>
-  <div style="width:24%">batch · thread 1</div>
-  <div class="d9bus-t2" style="width:5%"></div>
-  <div class="d9bus-empty" style="flex:1"></div>
-</div>
+    <div class="d9bus-label">
+        segment buffer (on disk or in memory depending on configuration)
+    </div>
+    <div class="d9bus-seg">
+        <div class="d9bus-hdr" style="width: 8%">header</div>
+        <div style="width: 38%">batch · thread 0</div>
+        <div style="width: 24%">batch · thread 1</div>
+        <div class="d9bus-t2" style="width: 5%"></div>
+        <div class="d9bus-empty" style="flex: 1"></div>
+    </div>
 </div>
