@@ -1,0 +1,141 @@
+<div class="d9tf">
+<style>
+  .d9tf {
+    --d9tf-accent: #0e7c66;
+    --d9tf-ink: #1a202c;
+    --d9tf-muted: #718096;
+    font-family: "Helvetica Neue", -apple-system, system-ui, sans-serif;
+    color: var(--d9tf-ink);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 1.5em 0;
+    font-size: 12px;
+    line-height: 1.3;
+    container-type: inline-size;
+  }
+  .d9tf-title { font-size: 16px; font-weight: 700; margin: 0 0 18px; letter-spacing: -0.01em; }
+  .d9tf-grid { display: grid; grid-template-columns: 168px 1fr; column-gap: 18px; row-gap: 0; align-items: center; }
+  .d9tf-side {
+    font-size: 11px; color: var(--d9tf-muted); line-height: 1.4; text-align: right;
+    /* Fixed height matching the bar rows so a tall caption can't stretch the
+       grid row and open a gap between the bars and the zoom connectors. */
+    height: 42px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .d9tf-side b { display: block; font-size: 12px; font-weight: 700; color: var(--d9tf-ink); }
+  .d9tf-side code { font-family: ui-monospace, Menlo, monospace; font-size: 10px; }
+  .d9tf-row {
+    display: flex; height: 42px; box-sizing: border-box;
+    border: 1px solid #94a3b8; margin: 0;
+  }
+  .d9tf-b {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    border-right: 1px solid #94a3b8; box-sizing: border-box;
+    background: #f1f5f9; color: #334155; overflow: hidden; white-space: nowrap;
+    line-height: 1.15; padding: 0 2px; margin: 0;
+  }
+  .d9tf-b:last-child { border-right: none; }
+  .d9tf-b small { font-size: 9.5px; color: var(--d9tf-muted); }
+  .d9tf-zoomed {
+    background: #e6f4f1; color: #0b5c4c; font-weight: 600;
+    box-shadow: inset 0 0 0 1.5px var(--d9tf-accent);
+  }
+  .d9tf-hdr { background: #4a5568; border-right-color: #4a5568; color: #fff; }
+  .d9tf-hdr small { color: #cbd5e0; }
+  .d9tf-schema { background: #dbeafe; color: #1e40af; }
+  .d9tf-schema2 { background: #ede9fe; color: #5b21b6; }
+  .d9tf-evt12 { background: #eff6ff; color: #1e40af; }
+  .d9tf-evt12 small { color: #60a5fa; }
+  .d9tf-evt14 { background: #f5f3ff; color: #5b21b6; }
+  .d9tf-evt14 small { color: #a78bfa; }
+  .d9tf-strpool { background: #fef3c7; color: #92400e; }
+  .d9tf-strpool small { color: #b45309; }
+  .d9tf-stkpool { background: #ffe4e6; color: #9f1239; }
+  .d9tf-reset { background: #4a5568; border-right-color: #4a5568; color: #fff; font-size: 9px; }
+  .d9tf-sym { background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 4px, #e2e8f0 4px, #e2e8f0 8px); }
+  .d9tf-field { background: #e6f4f1; color: #0b5c4c; }
+  .d9tf-field small { color: #47857a; }
+  .d9tf-zoom { display: block; width: 100%; height: 34px; margin: 0; padding: 0; }
+  /* Sized to the card itself, not the viewport: blog content column is
+     ~670px wide, leaving ~440px for the bars unless we slim things down. */
+  @container (max-width: 760px) {
+    .d9tf-grid { grid-template-columns: 118px 1fr; column-gap: 14px; font-size: 10px; }
+    .d9tf-side { font-size: 10px; }
+    .d9tf-side b { font-size: 10.5px; }
+    .d9tf-b small { font-size: 8.5px; }
+  }
+  @media (max-width: 620px) {
+    .d9tf { font-size: 10px; padding: 16px; }
+    .d9tf-b { font-size: 9px; padding: 0 1px; }
+    .d9tf-reset { font-size: 7.5px; }
+    .d9tf-b small { display: none; }
+    .d9tf-grid { grid-template-columns: 1fr; }
+    .d9tf-side { text-align: left; margin: 14px 0 4px; height: auto; display: block; }
+    .d9tf-grid > .d9tf-side:first-child { margin-top: 0; }
+    .d9tf-zoom, .d9tf-spacer { display: none; }
+  }
+</style>
+
+<div class="d9tf-title">Anatomy of a dial9 trace file</div>
+
+<div class="d9tf-grid">
+  <!-- Level 1 (innermost): one event -->
+  <div class="d9tf-side"><b>event</b><span><code>PollStart</code> · ~14 bytes, no field names on the wire</span></div>
+  <div class="d9tf-row">
+    <div class="d9tf-b d9tf-hdr" style="width:8%">tag<br><small>1 B</small></div>
+    <div class="d9tf-b d9tf-schema" style="width:14%">schema id #12<br><small>2 B</small></div>
+    <div class="d9tf-b" style="width:16%">Δt nanos<br><small>3 B (u24)</small></div>
+    <div class="d9tf-b d9tf-field" style="width:15%">worker_id<br><small>varint</small></div>
+    <div class="d9tf-b d9tf-field" style="width:14%">local_queue<br><small>1 B</small></div>
+    <div class="d9tf-b d9tf-field" style="width:14%">task_id<br><small>varint</small></div>
+    <div class="d9tf-b d9tf-strpool" style="width:19%">spawn_loc<br><small>4 B → string pool</small></div>
+  </div>
+
+  <!-- zoom: highlighted EVT (35%..41% of the batch row) expands up into the full event row -->
+  <div class="d9tf-spacer"></div>
+  <svg class="d9tf-zoom" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="0,0 100,0 41,10 35,10" fill="rgba(14,124,102,0.06)"/>
+    <line x1="0" y1="0" x2="35" y2="10" stroke="#0e7c66" stroke-width="1" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+    <line x1="100" y1="0" x2="41" y2="10" stroke="#0e7c66" stroke-width="1" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+  </svg>
+
+  <!-- Level 2: one thread-local batch. Schemas and pools interleave with
+       events: each arrives just before the first event that needs it. -->
+  <div class="d9tf-side"><b>batch</b>self-contained stream from one thread-local buffer</div>
+  <div class="d9tf-row">
+    <div class="d9tf-b d9tf-hdr" style="width:7%">header<br><small>5 B</small></div>
+    <div class="d9tf-b d9tf-schema" style="width:12%">SCHEMA<br><small>#12 PollStart</small></div>
+    <div class="d9tf-b d9tf-strpool" style="width:10%">string<br>pool</div>
+    <div class="d9tf-b d9tf-evt12" style="width:6%">EVT<br><small>#12</small></div>
+    <div class="d9tf-b d9tf-zoomed" style="width:6%">EVT<br><small>#12</small></div>
+    <div class="d9tf-b d9tf-evt12" style="width:6%">EVT<br><small>#12</small></div>
+    <div class="d9tf-b d9tf-schema2" style="width:10%">SCHEMA<br><small>#14 Wake</small></div>
+    <div class="d9tf-b d9tf-evt14" style="width:6%">EVT<br><small>#14</small></div>
+    <div class="d9tf-b d9tf-reset" style="width:4%">ts<br>reset</div>
+    <div class="d9tf-b d9tf-evt14" style="width:6%">EVT<br><small>#14</small></div>
+    <div class="d9tf-b d9tf-stkpool" style="width:10%">stack<br>pool</div>
+    <div class="d9tf-b d9tf-evt12" style="width:6%">EVT<br><small>#12</small></div>
+    <div class="d9tf-b" style="flex:1">···</div>
+  </div>
+
+  <!-- zoom: highlighted batch (24%..50% of the file row) expands up into the full batch row -->
+  <div class="d9tf-spacer"></div>
+  <svg class="d9tf-zoom" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="0,0 100,0 50,10 24,10" fill="rgba(14,124,102,0.06)"/>
+    <line x1="0" y1="0" x2="24" y2="10" stroke="#0e7c66" stroke-width="1" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+    <line x1="100" y1="0" x2="50" y2="10" stroke="#0e7c66" stroke-width="1" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+  </svg>
+
+  <!-- Level 3 (outermost): the sealed trace file -->
+  <div class="d9tf-side"><b>trace file</b>one sealed segment, gzipped &amp; uploaded; symbol table appended</div>
+  <div class="d9tf-row">
+    <div class="d9tf-b d9tf-hdr" style="width:8%">header<br><small>meta</small></div>
+    <div class="d9tf-b" style="width:16%">batch<br><small>thread A</small></div>
+    <div class="d9tf-b d9tf-zoomed" style="width:26%">batch<br><small>thread B</small></div>
+    <div class="d9tf-b" style="width:16%">batch<br><small>thread A</small></div>
+    <div class="d9tf-b" style="flex:1">···</div>
+    <div class="d9tf-b d9tf-sym" style="width:16%">symbol table<br><small>appended</small></div>
+  </div>
+</div>
+</div>

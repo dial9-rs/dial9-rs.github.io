@@ -1,0 +1,166 @@
+<div class="d9st" id="d9st">
+<style>
+  .d9st {
+    --d9st-accent: #0e7c66;
+    --d9st-dark: #4a5568;
+    --d9st-light: #a0aec0;
+    --d9st-ink: #1a202c;
+    --d9st-muted: #718096;
+    --d9st-track: #f1f5f9;
+    font-family: "Helvetica Neue", -apple-system, system-ui, sans-serif;
+    color: var(--d9st-ink);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 22px 26px;
+    margin: 1.5em 0;
+  }
+  .d9st-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .d9st-head > div:first-child { flex: 1 1 auto; min-width: 0; }
+  .d9st-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .d9st-sub { font-size: 12.5px; color: var(--d9st-muted); margin: 0 0 18px; min-height: 4.2em; max-width: 520px; line-height: 1.4; }
+  .d9st-toggle { display: inline-flex; border: 1px solid #cbd5e0; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+  .d9st-toggle button {
+    font: inherit; font-size: 12.5px; padding: 6px 14px; border: none; background: #fff;
+    color: var(--d9st-dark); cursor: pointer; white-space: nowrap; margin: 0;
+  }
+  .d9st-toggle button + button { border-left: 1px solid #cbd5e0; }
+  .d9st-toggle button.d9st-active { background: var(--d9st-ink); color: #fff; }
+  .d9st-row { display: grid; grid-template-columns: 160px 1fr; gap: 14px; align-items: center; margin: 18px 0; }
+  .d9st-name { text-align: right; font-size: 13px; line-height: 1.3; }
+  .d9st-name small { color: var(--d9st-muted); font-size: 11px; }
+  .d9st-barline { display: flex; align-items: center; gap: 10px; }
+  .d9st-track { flex: 1; background: var(--d9st-track); border-radius: 4px; height: 28px; position: relative; overflow: hidden; }
+  .d9st-seg { position: absolute; top: 0; bottom: 0; }
+  .d9st-val { font-size: 13.5px; font-weight: 700; width: 110px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .d9st-detail { grid-column: 2; font-size: 11px; color: var(--d9st-muted); margin-top: -12px; min-height: 14px; }
+  .d9st-src { font-size: 11px; color: #a0aec0; margin: 20px 0 0; }
+  .d9st table { font-size: 13px; border-collapse: collapse; }
+  .d9st table td, .d9st table th { border: 1px solid #e2e8f0; padding: 4px 10px; }
+  @media (max-width: 560px) {
+    .d9st-head { flex-direction: column; }
+    .d9st-row { grid-template-columns: 1fr; gap: 4px; }
+    .d9st-name { text-align: left; }
+    .d9st-detail { grid-column: 1; }
+  }
+</style>
+
+<div class="d9st-head">
+  <div>
+    <div class="d9st-title">Cost to serialize one telemetry event</div>
+    <p class="d9st-sub" id="d9st-subtitle"></p>
+  </div>
+  <div class="d9st-toggle" role="tablist">
+    <button type="button" data-mode="time">Time</button>
+    <button type="button" data-mode="size">Size</button>
+    <button type="button" data-mode="gzip">Size, compressed</button>
+  </div>
+</div>
+<div id="d9st-chart"></div>
+<p class="d9st-src">1M-event scheduler-telemetry mix (poll start/end, park, wake, CPU samples w/ stacks) · Apple M2 · medians of 8 runs</p>
+
+<noscript>
+  <table>
+    <tr><th></th><th>time (ns/event)</th><th>size (B/event)</th><th>gzip'd (B/event)</th></tr>
+    <tr><td>dial9 trace format</td><td>22</td><td>37.2</td><td>4.7</td></tr>
+    <tr><td>OTLP protobuf (LogRecord)</td><td>345</td><td>114.2</td><td>14.7</td></tr>
+    <tr><td>JSON (tracing + JSON subscriber)</td><td>1,050</td><td>244.5</td><td>26.8</td></tr>
+  </table>
+</noscript>
+
+<script>
+(function () {
+  const MODES = {
+    time: {
+      unit: "ns/event",
+      scale: 1120,
+      fmt: v => v.toLocaleString(undefined, { maximumFractionDigits: 0 }),
+      subtitle: "Wall-clock time to turn one event into bytes. The JSON bar is the full " +
+                "tracing pipeline (dispatch + JSON fmt layer); OTLP is protobuf message build + encode.",
+    },
+    size: {
+      unit: "B/event",
+      scale: 260,
+      fmt: v => v.toLocaleString(undefined, { maximumFractionDigits: 1 }),
+      subtitle: "Bytes on the wire per event, uncompressed.",
+    },
+    gzip: {
+      unit: "B/event",
+      scale: 29,
+      fmt: v => v.toLocaleString(undefined, { maximumFractionDigits: 1 }),
+      subtitle: "Bytes per event after gzip level 1 (dial9's default). dial9 and JSON compress " +
+                "the whole stream; OTLP is compressed per gRPC request.",
+    },
+  };
+
+  const DATA = [
+    {
+      name: "dial9 trace format",
+      time: { segs: [[21.6, "var(--d9st-accent)"]], detail: "" },
+      size: { segs: [[37.2, "var(--d9st-accent)"]], detail: "" },
+      gzip: { segs: [[4.7, "var(--d9st-accent)"]], detail: "" },
+    },
+    {
+      name: "OTLP protobuf", small: "(LogRecord)",
+      time: { segs: [[130.7, "var(--d9st-dark)"], [214.1, "var(--d9st-light)"]],
+              detail: "build LogRecord structs · 131 ns&ensp;+&ensp;protobuf encode · 214 ns" },
+      size: { segs: [[114.2, "var(--d9st-light)"]], detail: "" },
+      gzip: { segs: [[14.7, "var(--d9st-light)"]], detail: "" },
+    },
+    {
+      name: "JSON", small: "(tracing + JSON subscriber)",
+      time: { segs: [[10.5, "var(--d9st-dark)"], [1039.6, "var(--d9st-light)"]],
+              detail: "tracing dispatch · 10 ns&ensp;+&ensp;JSON format & write · 1,040 ns" },
+      size: { segs: [[244.5, "var(--d9st-light)"]], detail: "" },
+      gzip: { segs: [[26.8, "var(--d9st-light)"]], detail: "" },
+    },
+  ];
+
+  const root = document.getElementById("d9st");
+  const chart = document.getElementById("d9st-chart");
+  DATA.forEach((d, i) => {
+    const row = document.createElement("div");
+    row.className = "d9st-row";
+    row.innerHTML = `
+      <div class="d9st-name">${d.name}${d.small ? `<br><small>${d.small}</small>` : ""}</div>
+      <div class="d9st-barline">
+        <div class="d9st-track">
+          <div class="d9st-seg" id="d9st-seg-${i}-0"></div>
+          <div class="d9st-seg" id="d9st-seg-${i}-1"></div>
+        </div>
+        <div class="d9st-val" id="d9st-val-${i}"></div>
+      </div>
+      <div class="d9st-detail" id="d9st-detail-${i}"></div>`;
+    chart.appendChild(row);
+  });
+
+  function show(mode) {
+    const m = MODES[mode];
+    document.getElementById("d9st-subtitle").innerHTML = m.subtitle;
+    root.querySelectorAll(".d9st-toggle button").forEach(b =>
+      b.classList.toggle("d9st-active", b.dataset.mode === mode));
+
+    DATA.forEach((d, i) => {
+      const { segs, detail } = d[mode];
+      let left = 0;
+      for (let s = 0; s < 2; s++) {
+        const el = document.getElementById(`d9st-seg-${i}-${s}`);
+        const [v, color] = segs[s] ?? [0, "transparent"];
+        const w = (v / m.scale) * 100;
+        el.style.left = left + "%";
+        el.style.width = w + "%";
+        if (segs[s]) el.style.background = color;
+        left += w;
+      }
+      const total = segs.reduce((a, [v]) => a + v, 0);
+      document.getElementById(`d9st-val-${i}`).textContent = `${m.fmt(total)} ${m.unit}`;
+      document.getElementById(`d9st-detail-${i}`).innerHTML = detail;
+    });
+  }
+
+  root.querySelectorAll(".d9st-toggle button").forEach(b =>
+    b.addEventListener("click", () => show(b.dataset.mode)));
+  show("time");
+})();
+</script>
+</div>

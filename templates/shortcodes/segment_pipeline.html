@@ -1,0 +1,49 @@
+<div class="d9pipe">
+<style>
+  .d9pipe {
+    --d9pipe-accent: #0e7c66;
+    --d9pipe-ink: #1a202c;
+    --d9pipe-muted: #718096;
+    font-family: "Helvetica Neue", -apple-system, system-ui, sans-serif;
+    color: var(--d9pipe-ink);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 1.5em 0;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .d9pipe-title { font-size: 16px; font-weight: 700; margin: 0 0 14px; letter-spacing: -0.01em; }
+  .d9pipe-flow { display: flex; align-items: center; gap: 8px; }
+  .d9pipe-stage {
+    flex: 1; border: 1px solid #94a3b8; background: #f8fafc;
+    padding: 9px 10px; text-align: center;
+  }
+  .d9pipe-stage b { display: block; font-size: 12.5px; }
+  .d9pipe-stage span { display: block; font-size: 10.5px; color: var(--d9pipe-muted); margin-top: 2px; }
+  .d9pipe-src { border-style: dashed; }
+  .d9pipe-dst { border-color: var(--d9pipe-accent); background: #e6f4f1; }
+  .d9pipe-dst b { color: #0b5c4c; }
+  .d9pipe-arrow { flex-shrink: 0; }
+  .d9pipe-note { font-size: 11px; color: var(--d9pipe-muted); margin: 12px 0 0; }
+  @media (max-width: 560px) {
+    .d9pipe-flow { flex-direction: column; }
+    .d9pipe-arrow { transform: rotate(90deg); }
+  }
+</style>
+
+<div class="d9pipe-title">Getting segments off host</div>
+
+<div class="d9pipe-flow">
+  <div class="d9pipe-stage d9pipe-src"><b>sealed segment</b><span>~1 MB, already encoded</span></div>
+  <svg class="d9pipe-arrow" width="24" height="14" viewBox="0 0 24 14" aria-hidden="true"><line x1="0" y1="7" x2="17" y2="7" stroke="#94a3b8" stroke-width="1.5"/><polygon points="16,2.5 16,11.5 24,7" fill="#94a3b8"/></svg>
+  <div class="d9pipe-stage"><b>symbolize</b><span>appends symbol table</span></div>
+  <svg class="d9pipe-arrow" width="24" height="14" viewBox="0 0 24 14" aria-hidden="true"><line x1="0" y1="7" x2="17" y2="7" stroke="#94a3b8" stroke-width="1.5"/><polygon points="16,2.5 16,11.5 24,7" fill="#94a3b8"/></svg>
+  <div class="d9pipe-stage"><b>gzip</b><span>fast level · ~2.6×</span></div>
+  <svg class="d9pipe-arrow" width="24" height="14" viewBox="0 0 24 14" aria-hidden="true"><line x1="0" y1="7" x2="17" y2="7" stroke="#94a3b8" stroke-width="1.5"/><polygon points="16,2.5 16,11.5 24,7" fill="#94a3b8"/></svg>
+  <div class="d9pipe-stage d9pipe-dst"><b>S3 / disk</b><span>uploaded independently</span></div>
+</div>
+
+<p class="d9pipe-note">Pluggable <code>SegmentProcessor</code> stages on the background worker, off the hot path.</p>
+</div>
