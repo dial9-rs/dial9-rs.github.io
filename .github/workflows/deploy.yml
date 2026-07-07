@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           submodules: recursive
-      - uses: shalzz/zola-deploy-action@960304368c31a93d6991d64ae962df0786b905f1 # v0.19.2
+      - uses: shalzz/zola-deploy-action@74526e63f38f84b82476349bbcd886b82040ff98 # v0.22.1
         env:
           BUILD_ONLY: true
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
