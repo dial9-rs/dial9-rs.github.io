@@ -40,7 +40,7 @@ async fn main() {
 ```
 
 ### The `dial9` viewer now supports spans, flamegraphs, and Tokio stats across multiple trace files
-The dial9 viewer does _technically_ still work as an HTML-only webpage, but if you run it via `dial9 serve` and your traces are in S3 (or anywhere that implements the [`StorageBackend`][storage-backend] trait), the dial9 viewer can produce [flamegraphs, flamegraph diffs, and Tokio stats][aggregator-doc] across long time ranges and multiple hosts.
+The dial9 viewer does _technically_ still work as an HTML-only webpage, but if you run it via `dial9 serve` and your traces are in S3 (or anywhere that implements the [`StorageBackend`][storage-backend] trait), the dial9 viewer can produce flamegraphs, flamegraph diffs, and Tokio stats across long time ranges and multiple hosts.
 
 <figure class="align-center" style="width: min(1200px, calc(100vw - 32px)); max-width: none; margin-left: 50%; transform: translateX(-50%);">
   <a href="/blog/whats-new-in-dial9-0-5/flamegraph-overview.png" aria-label="Open the full-size flamegraph screenshot">
@@ -51,13 +51,6 @@ The dial9 viewer does _technically_ still work as an HTML-only webpage, but if y
 
 This works without any offline aggregation; when you open a flamegraph, it starts loading a deterministic sampling of your uploaded segments. As more segments are loaded, the flamegraph (or span histogram, or Tokio stats) will be incrementally refined, but usually, the changes after, say, 2-3% of the data is loaded are pretty minor as long as the sampling is uniform.
 
-<figure class="align-center" style="width: min(1200px, calc(100vw - 32px)); max-width: none; margin-left: 50%; transform: translateX(-50%);">
-  <a href="/blog/whats-new-in-dial9-0-5/span-explorer-overview.png" aria-label="Open the full-size Span Explorer screenshot">
-    <img src="/blog/whats-new-in-dial9-0-5/span-explorer-overview.png" alt="dial9 Span Explorer showing eight span types, latency percentiles for more than one million instances, a duration histogram, time composition, and exemplar records" width="2526" height="1764" style="width: 100%; height: auto;" loading="lazy" decoding="async">
-  </a>
-  <figcaption><p>The Span Explorer summarizes every span type across the selected time range, including instance counts, latency percentiles, duration histograms, estimated time composition, and exemplar spans.</p></figcaption>
-</figure>
-
 It's also suitable for being hosted on your own infrastructure (behind auth, of course).
 
 And because the data all comes from raw events, you can do wild stuff like look at a flamegraph diff for a single operation when it was slow vs. fast.
@@ -66,16 +59,7 @@ And because the data all comes from raw events, you can do wild stuff like look 
   <a href="/blog/whats-new-in-dial9-0-5/flamegraph-duration-band.png" aria-label="Open the full-size duration-filtered flamegraph screenshot">
     <img src="/blog/whats-new-in-dial9-0-5/flamegraph-duration-band.png" alt="dial9 flamegraph filtered to polls between 1.025 and 47.453 milliseconds, showing allocator entropy initialization stacks beneath the duration histogram" width="1282" height="1764" style="width: 100%; height: auto;" loading="lazy" decoding="async">
   </a>
-  <figcaption><p>Filtering the flamegraph to a duration band isolates the stacks associated with that latency range.</p></figcaption>
-</figure>
-
-Span histograms are interactive too: select a duration band to recalculate its time composition and find representative examples.
-
-<figure class="align-center" style="width: min(1200px, calc(100vw - 32px)); max-width: none; margin-left: 50%; transform: translateX(-50%);">
-  <a href="/blog/whats-new-in-dial9-0-5/span-explorer-duration-band.png" aria-label="Open the full-size selected span-duration band screenshot">
-    <img src="/blog/whats-new-in-dial9-0-5/span-explorer-duration-band.png" alt="dial9 Span Explorer with the 4.08 to 9.41 millisecond duration band selected, showing time composition and an exemplar span" width="1658" height="524" style="width: 100%; height: auto;" loading="lazy" decoding="async">
-  </a>
-  <figcaption><p>Selecting a span-duration band recomputes its time composition and surfaces exemplars that jump back to the original trace.</p></figcaption>
+  <figcaption><p>A flamegraph isolating polls longer than 1ms. This catches aws-lc warming its entropy pool.</p></figcaption>
 </figure>
 
 ```bash
@@ -112,6 +96,21 @@ let layer = Dial9SpanLayerWithResponse::new(|order_id: &u64| {
 });
 ```
 
+<figure class="align-center" style="width: min(1200px, calc(100vw - 32px)); max-width: none; margin-left: 50%; transform: translateX(-50%);">
+  <a href="/blog/whats-new-in-dial9-0-5/span-explorer-overview.png" aria-label="Open the full-size Span Explorer screenshot">
+    <img src="/blog/whats-new-in-dial9-0-5/span-explorer-overview.png" alt="dial9 Span Explorer showing eight span types, latency percentiles for more than one million instances, a duration histogram, time composition, and exemplar records" width="2526" height="1764" style="width: 100%; height: auto;" loading="lazy" decoding="async">
+  </a>
+  <figcaption><p>The Span Explorer summarizes every span type across the selected time range, including instance counts, latency percentiles, duration histograms, estimated time composition, and exemplar spans.</p></figcaption>
+</figure>
+
+Span histograms are interactive too: select a duration band to find representative examples, then use an exemplar's **Jump** button to open the exact trace file containing that span.
+
+<figure class="align-center" style="width: min(1200px, calc(100vw - 32px)); max-width: none; margin-left: 50%; transform: translateX(-50%);">
+  <a href="/blog/whats-new-in-dial9-0-5/span-explorer-duration-band.png" aria-label="Open the full-size selected span-duration band screenshot">
+    <img src="/blog/whats-new-in-dial9-0-5/span-explorer-duration-band.png" alt="dial9 Span Explorer with a duration band selected and a Jump button for opening the exact trace file containing an exemplar span" width="1658" height="524" style="width: 100%; height: auto;" loading="lazy" decoding="async">
+  </a>
+  <figcaption><p>Jump directly from an aggregated duration band to the exact trace file for an exemplar span.</p></figcaption>
+</figure>
 
 ### Trigger mode lets you upload only anomalous data
 High-traffic applications using dial9 often produce more than 1MB/second of trace data. This is a lot to store, especially if the data doesn't have anything interesting. dial9 now supports a rotating ring buffer of data that is only flushed when triggered from the application. For example, if your application hits an anomalous condition or has a sudden increase in load, you can trigger a dump to be flushed to disk, S3, or any other destination.
