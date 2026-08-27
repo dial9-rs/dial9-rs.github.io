@@ -4,7 +4,7 @@ date = 2026-08-04
 authors = ["Russell Cohen"]
 +++
 
-dial9 started as a tool to help understand Tokio. But it turns out that if you build a tool that can efficiently record as many events as you need to understand Tokio, you end up building [everything you need to be a general-purpose flight recorder][flight-recorder]. dial9 0.5 makes this vision a reality.
+dial9 started as a tool to help understand Tokio. But it turns out that if you build a tool that can efficiently record as many events as you need to understand Tokio, you end up building [everything you need to be a general-purpose flight recorder][flight-recorder]. dial9 0.5 makes this vision a reality. [You can play around with a demo app here](https://dial9-tokio-telemetry.netlify.app/viewer.html?trace=demo-trace.bin).
 
 If you aren't coming from 0.3 and just want to know what dial9 is: dial9 is a flight recorder that supports the following data sources out of the box (and new data sources can be added externally):
 
@@ -13,9 +13,9 @@ If you aren't coming from 0.3 and just want to know what dial9 is: dial9 is a fl
 3. **Profiling** (`cpu-profiling`): profiler based on frame-pointer unwinding on Linux and Android with fallback to the ctimer API on containerized environments — [docs][cpu-docs], [example][example-cpu]
 4. **Tracing** (`tracing-layer`): `tracing` spans, entered and closed — [docs][tracing-layer-docs], [example][example-tracing]. You can also create [spans manually][manual-spans-example].
 5. **metrique** (`metrique-sink`): unit-of-work events & spans with per-request context — [docs][metrique-sink-docs], [example][example-metrique]
-6. **Linux Kernel Resource Usage** (`process-resource`, unix): rss, page faults, and the rest of `getrusage` — [docs][process-docs], [example][example-process]
+6. **Linux Kernel Resource Usage** (`process-resource`, Unix): RSS, page faults, and the rest of `getrusage` — [docs][process-docs], [example][example-process]
 7. **Socket Accept Queues** (`linux-socket`, Linux only): TCP accept-queue depth — [docs][socket-docs], [example][example-socket]
-8. **And more!**: Any crate can provide their own [source][source-trait] of dial9 events.
+8. **And more!**: Any crate can provide its own [source][source-trait] of dial9 events.
 
 ### The main crate is now [`dial9`][dial9-crate] (was previously `dial9-tokio-telemetry`)
 
@@ -59,7 +59,7 @@ And because the data all comes from raw events, you can do wild stuff like look 
   <a href="/blog/whats-new-in-dial9-0-5/flamegraph-duration-band.png" aria-label="Open the full-size duration-filtered flamegraph screenshot">
     <img src="/blog/whats-new-in-dial9-0-5/flamegraph-duration-band.png" alt="dial9 flamegraph filtered to polls between 1.025 and 47.453 milliseconds, showing allocator entropy initialization stacks beneath the duration histogram" width="1282" height="1764" style="width: 100%; height: auto;" loading="lazy" decoding="async">
   </a>
-  <figcaption><p>A flamegraph isolating polls longer than 1ms. This catches aws-lc warming its entropy pool.</p></figcaption>
+  <figcaption><p>A flamegraph isolating polls longer than 1 ms. This catches AWS-LC warming its entropy pool.</p></figcaption>
 </figure>
 
 ```bash
@@ -74,8 +74,11 @@ dial9 serve --local --bucket my-traces --prefix traces/ --agg
 
 (`--local` here means "render logs human-readably for a workstation" — the trace source is `--agg-source-dir` or `--bucket`. There's also `dial9 serve --simulator` if you just want to poke at a synthetic trace.)
 
+### dial9 works without `tokio_unstable`!
+dial9 0.5 now works without `tokio_unstable`! Instead of failing to compile, it provides more limited Tokio-based telemetry because features like poll start/stop callbacks are unavailable.
+
 ### dial9 can natively produce spans
-Profiling data is useful and span data is useful, but when you have them in the same trace side by side, they can be extremely useful for debugging. dial9 0.3 supported capturing tracing spans. However, this was often cumbersome to integrate into existing applications because it required intrusive changes to their tracing subscriber. Now, you can produce spans directly from dial9:
+Profiling data is useful, and span data describes timed operations in your application. When you have both side by side in the same trace, they're especially useful for debugging. dial9 0.3 supported capturing `tracing` spans. However, this was often cumbersome to integrate into existing applications because it required intrusive changes to their tracing subscriber. Now, you can produce spans directly from dial9:
 ```rust
 let (load_span, slots) =
     dial9_span!("db.load_order", order_id: u64 = order_id, total_cents: u64);
@@ -88,7 +91,7 @@ let order = async {
 .await;
 ```
 
-There is also a [tower-layer][dial9-tower-layer] for easy integration with tower-based services:
+There is also a [Tower layer][dial9-tower-layer] for easy integration with Tower-based services:
 ```rust
 let layer = Dial9SpanLayerWithResponse::new(|order_id: &u64| {
     let (span, slots) = dial9_span!("checkout", order_id: u64 = *order_id, status: u16);
@@ -113,7 +116,7 @@ Span histograms are interactive too: select a duration band to find representati
 </figure>
 
 ### Trigger mode lets you upload only anomalous data
-High-traffic applications using dial9 often produce more than 1MB/second of trace data. This is a lot to store, especially if the data doesn't have anything interesting. dial9 now supports a rotating ring buffer of data that is only flushed when triggered from the application. For example, if your application hits an anomalous condition or has a sudden increase in load, you can trigger a dump to be flushed to disk, S3, or any other destination.
+High-traffic applications using dial9 often produce more than 1 MB/second of trace data. This is a lot to store, especially if the data doesn't have anything interesting. dial9 now supports a rotating ring buffer of data that is only flushed when triggered from the application. For example, if your application hits an anomalous condition or has a sudden increase in load, you can trigger a dump to be flushed to disk, S3, or any other destination.
 
 [`with_dump_trigger`][with-dump-trigger] gates *when* the pipeline runs, not *what* it does — whatever pipeline you'd have run continuously is the pipeline a dump runs.
 
@@ -131,7 +134,7 @@ use dial9::{Dial9Handle, DiskBuffer, Dial9HandleTokioExt, RecorderPipelineExt, T
         // Whatever pipeline you'd run continuously. `with_dump_trigger`
         // only changes *when* it runs.
         .with_custom_pipeline(|p| p.gzip().write_back_to("/tmp/dial9-dumps"))
-        // Coalesce a re-tripping watcher's burst into one dump.
+        // Coalesce a retriggering watcher's burst into one dump.
         .with_dump_trigger(|t| t.debounce(Duration::from_secs(30)))
         .build();
 
@@ -165,19 +168,18 @@ async fn main() {
 See [`on_trigger_dump.rs`][example-trigger] and [`on_trigger_dump_windows.rs`][example-trigger-windows] for examples.
 
 ### In-memory buffer skips writing to disk
-The buffering of in-flight trace files has been overhauled to now have two options:
+In-flight trace buffering has been overhauled and now has two options:
 - [`DiskBuffer`][disk-buffer]: Same as dial9 0.3.0, a directory on disk holds trace files in flight prior to being uploaded
-- [`MemoryBuffer`][memory-buffer]: A new mode that buffers traces in memory. In practice, this does not increase memory usage since the trace needed to be loaded into memory to symbolize it anyway. The only downside is that traces are not durable in the event of an application panic or crash. This is the recommended mode for most applications.
+- [`MemoryBuffer`][memory-buffer]: A new mode that buffers traces in memory. In practice, this does not increase memory usage since each trace needs to be loaded into memory for symbolization anyway. The only downside is that traces are not durable in the event of an application panic or crash. This is the recommended mode for most applications.
 
 ### CPU profiling now works on Android!
-Thanks to [@nickrobinson][nickrobinson] for [landing an upstream PR to `libc`][libc-pr] & [updating dial9][android-pr]. dial9 now works great end-to-end on Android! Android needs special handling because the Android runtime owns `SIGSEGV` through `libsigchain`, so the PR adds the platform-specific signal and context handling needed for safe frame-pointer unwinding. It's been running at Ditto behind a feature flag on production Android devices.
+Thanks to [@nickrobinson][nickrobinson] for [landing an upstream PR to `libc`][libc-pr] and [updating dial9][android-pr]. dial9 now works great end-to-end on Android! Android needs special handling because the Android runtime owns `SIGSEGV` through `libsigchain`, so the PR adds the platform-specific signal and context handling needed for safe frame-pointer unwinding. It's been running at Ditto behind a feature flag on production Android devices.
 
 ### Everything is a [`Source`][source-trait]
 In dial9 0.3, Tokio and CPU profilers were both deeply integrated to provide data into dial9. In 0.5 they're [ordinary `Source` implementations][tokio-source-pr] on a plain `Recorder`, which means the profiling features no longer pull in `tokio` at all, and you can plug in your own source without touching dial9's internals. A `Source` can also contribute a stage to the segment pipeline — that's how enabling CPU profiling automatically wires up symbolization without the caller doing anything.
 
 ### Memory profiling liveset tracking is now much faster
-dial9's memory profiler previously wrote a sampled set of allocations and _all_ frees into a ring buffer which the flush thread then drained. The problem was that writing all frees into one `crossbeam` ArrayQueue became a bottleneck for some applications. [The new memory profiler][memory-profiling-pr] uses `scc` on the allocator side to filter allocations
-prior to writing them into the ring buffer. This makes free-set tracking much more usable in production environments (but you should obviously still benchmark it for your application!) Since the size of the hashmap is only dependent on the sampled liveset, running at very low sampling rates should result in very low performance overhead.
+dial9's memory profiler previously wrote a sampled set of allocations and _all_ frees into a ring buffer which the flush thread then drained. The problem was that writing all frees into one `crossbeam` ArrayQueue became a bottleneck for some applications. [The new memory profiler][memory-profiling-pr] uses `scc` on the allocator side to filter allocations prior to writing them into the ring buffer. This makes free-set tracking much more usable in production environments (but you should obviously still benchmark it for your application!) Since the size of the hash map depends only on the sampled liveset, running at very low sampling rates should result in very low performance overhead.
 
 ### metrique integration for events & spans
 
@@ -190,10 +192,17 @@ let metrics_join = ServiceMetrics::attach_to_stream(Dial9Stream::tee(
 ));
 ```
 
-Then you can emit metrics to `ServiceMetrics` and the same records will go both to your main output and dial9.
+Then you can emit metrics to `ServiceMetrics`, and the same records will go to both your main output and dial9.
 
 ### Process resource usage & Socket Accept Queues (now opt-in)
-Kernel resource usage sampling (rss, page faults) is now behind the `process-resource` feature, and [socket accept queue sampling][socket-pr] is behind `linux-socket`. **Note for upgraders:** rusage sampling was on by default on Unix in 0.3, so if you want to keep those events you need to enable the feature explicitly.
+Kernel resource usage sampling (RSS, page faults) is now behind the `process-resource` feature, and [socket accept queue sampling][socket-pr] is behind `linux-socket`. **Note for upgraders:** rusage sampling was on by default on Unix in 0.3, so if you want to keep those events you need to enable the feature explicitly.
+
+### Faster memory profiling when tracking the liveset
+When tracking the liveset, the 0.3 memory profiler recorded every free into a `crossbeam` channel and consolidated and filtered frees that did not correspond to a sampled allocation. The new version uses an `scc` concurrent hash map to filter frees on the caller side. Since the map is sharded, it reduces the overhead of tracking the liveset.
+
+### Acknowledgements
+0.5 would not have been possible without the hard work of many people. Special thanks to [Julián Montes de Oca][contributor-jv1i], [Facundo Luzko][contributor-fluzko], [Franco Profeti][contributor-noxware], [Prabhat Jain][contributor-prabrat], [Jason Gin][contributor-jasgin], [Jess Izen][contributor-jlizen], [Shreyas Kanjalkar][contributor-skanjalkar], [fmzbl][contributor-fmzbl], [Conrad Meyer][contributor-cemeyer], [David Tolnay][contributor-dtolnay], [Kevin Bowling][contributor-kev009], [Marc Bowes][contributor-marcbowes], [Nick Robinson][nickrobinson], [Scriptize][contributor-scriptize], [houseme][contributor-houseme], [mitchsw][contributor-mitchsw], [Daniel Henry-Mantilla][contributor-danielhenrymantilla], and [heihutu][contributor-heihutu].
+
 
 [flight-recorder]: https://dial9-rs.github.io/blog/dial9-a-flight-recorder-for-rust/
 [dial9-crate]: https://crates.io/crates/dial9
@@ -239,3 +248,20 @@ Kernel resource usage sampling (rss, page faults) is now behind the `process-res
 [metrique-pr]: https://github.com/dial9-rs/dial9/pull/723
 [socket-pr]: https://github.com/dial9-rs/dial9/pull/506
 [schedstat-pr]: https://github.com/dial9-rs/dial9/pull/619
+[contributor-jv1i]: https://github.com/jv1i
+[contributor-fluzko]: https://github.com/Fluzko
+[contributor-noxware]: https://github.com/noxware
+[contributor-prabrat]: https://github.com/prabrat
+[contributor-jasgin]: https://github.com/jasgin
+[contributor-jlizen]: https://github.com/jlizen
+[contributor-skanjalkar]: https://github.com/skanjalkar
+[contributor-fmzbl]: https://github.com/fmzbl
+[contributor-cemeyer]: https://github.com/cemeyer
+[contributor-dtolnay]: https://github.com/dtolnay
+[contributor-kev009]: https://github.com/kev009
+[contributor-marcbowes]: https://github.com/marcbowes
+[contributor-scriptize]: https://github.com/Scriptize
+[contributor-houseme]: https://github.com/houseme
+[contributor-mitchsw]: https://github.com/mitchsw
+[contributor-danielhenrymantilla]: https://github.com/danielhenrymantilla
+[contributor-heihutu]: https://github.com/heihutu
