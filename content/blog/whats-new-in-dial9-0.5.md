@@ -6,6 +6,8 @@ authors = ["Russell Cohen"]
 
 dial9 started as a tool to help understand Tokio. But it turns out that if you build a tool that can efficiently record as many events as you need to understand Tokio, you end up building [everything you need to be a general-purpose flight recorder][flight-recorder]. dial9 0.5 makes this vision a reality. [You can play around with a demo app here](https://dial9-tokio-telemetry.netlify.app/viewer.html?trace=demo-trace.bin).
 
+> Migrating from 0.3 to 0.5? See the [upgrade guide](https://github.com/dial9-rs/dial9/blob/main/docs/migration-0.3-to-0.5.md).
+
 If you aren't coming from 0.3 and just want to know what dial9 is: dial9 is a flight recorder that supports the following data sources out of the box (and new data sources can be added externally):
 
 1. **Tokio**: poll-start, poll-stop, worker park, worker unpark, scheduling delay, and [task dumps][task-dumps] (`taskdump`, Linux only) — [docs][tokio-events], [example][example-simple]
@@ -202,6 +204,9 @@ When tracking the liveset, the 0.3 memory profiler recorded every free into a `c
 
 ### Acknowledgements
 0.5 would not have been possible without the hard work of many people. Special thanks to [Julián Montes de Oca][contributor-jv1i], [Facundo Luzko][contributor-fluzko], [Franco Profeti][contributor-noxware], [Prabhat Jain][contributor-prabrat], [Jason Gin][contributor-jasgin], [Jess Izen][contributor-jlizen], [Shreyas Kanjalkar][contributor-skanjalkar], [fmzbl][contributor-fmzbl], [Conrad Meyer][contributor-cemeyer], [David Tolnay][contributor-dtolnay], [Kevin Bowling][contributor-kev009], [Marc Bowes][contributor-marcbowes], [Nick Robinson][nickrobinson], [Scriptize][contributor-scriptize], [houseme][contributor-houseme], [mitchsw][contributor-mitchsw], [Daniel Henry-Mantilla][contributor-danielhenrymantilla], and [heihutu][contributor-heihutu].
+
+### Where is dial9 0.4?
+Some internal crates were already on 0.4 during the 0.3 release series. We decided to move all crates to 0.5 to have a uniform crate layout.
 
 
 [flight-recorder]: https://dial9-rs.github.io/blog/dial9-a-flight-recorder-for-rust/
