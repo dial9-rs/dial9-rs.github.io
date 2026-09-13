@@ -21,6 +21,8 @@ If you start looking for red flags in a Tokio application, you will find them. A
 
 In the overwhelming majority of problems I have come across, the issue was in the application code itself, often in the interaction between multiple components of a distributed system (and not actually in Tokio). dial9 has given a lot of visibility into Tokio; at least as often as it finds a Tokio problem, it actually clearly demonstrates the _lack_ of one (which gives folks the confidence to search elsewhere!) Of course, sometimes it is a Tokio problem.
 
+In terms of Tokio metrics, the most useful is the recently added [schedule latency histogram](https://docs.rs/tokio/latest/tokio/runtime/struct.RuntimeMetrics.html#method.schedule_latency_histogram_bucket_range). Schedule latency is the amount of time between your task being ready to run (e.g. because the socket has data) and Tokio actually polling the future. Although this won't tell you what the cause is, most issues interacting with Tokio result in high scheduling latency.
+
 ### Split for latency, batch for throughput
 
 #### Yield more frequently to optimize for latency
