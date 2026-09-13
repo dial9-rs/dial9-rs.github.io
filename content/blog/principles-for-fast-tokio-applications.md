@@ -2,7 +2,7 @@
 title = "Principles for fast Tokio applications"
 date = 2026-09-13
 authors = ["Russell Cohen"]
-draft = true
+draft = false
 +++
 
 > I'm on my way back from RustConf. At the Unconf, we had a productive discussion about debugging and benchmarking async applications. Many interesting insights were shared. I'm attempting to enumerate some of them here, along with some of my own experiences. This is the first draft of what I hope can become a living document of best practices. Feel free to file an issue or open a PR!
