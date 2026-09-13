@@ -5,7 +5,7 @@ authors = ["Russell Cohen"]
 draft = false
 +++
 
-> I'm on my way back from RustConf. At the Unconf, we had a productive discussion about debugging and benchmarking async applications. Many interesting insights were shared. I'm attempting to enumerate some of them here, along with some of my own experiences. This is the first draft of what I hope can become a living document of best practices. Feel free to file an issue or open a PR!
+> I'm on my way back from RustConf. At the Unconf, we had a productive discussion about debugging and benchmarking async applications. Many interesting insights were shared. I'm attempting to enumerate some of them here, along with some of my own experiences. This is the first draft of what I hope can become a living document of best practices. Feel free to file an issue or [open a PR](https://github.com/dial9-rs/dial9-rs.github.io/blob/main/content%2Fblog%2Fprinciples-for-fast-tokio-applications.md). I'm hoping to also add a sample app demonstrating these issues along with what the dial9 trace looks like in the coming days.
 >
 > — Russell
 
