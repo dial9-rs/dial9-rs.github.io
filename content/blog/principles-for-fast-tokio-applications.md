@@ -25,9 +25,9 @@ In the overwhelming majority of problems I have come across, the issue was in th
 
 #### Yield more frequently to optimize for latency
 
-Low latency across many requests requires fairness. If you monopolize a worker while serving one class of request, you will increase latency for other requests.
+Low latency across many requests requires fairness between connections.
 
-For example, [Tokio's mini-Redis](https://github.com/rcoh/tokioconf-2026-workshop/tree/f1a198165a112e990760e32c4cb0cfa7af17bb38/exercises/mini-redis) supports request pipelining. Without modification, it will process an entire pipelined block before handling another request. This happens because `read_frame()` remains ready while buffered frames are available, so the loop does not yield back to the runtime.
+Consider Redis (or any application that supports request pipelining). A naive implementation will read data directly off the connection while more data is available. If requests are pipelined though, that data is going to be `Ready` for the entire pipelined request all at once. This creates both long polls and unfairness between clients.
 
 Throughput is largely unchanged: the same number of requests are processed. Latency, however, changes dramatically because one entire pipeline can wait behind another. Explicitly yielding after each request can reduce latency by roughly 10× in this example. You can do even better by yielding only after several consecutive immediately-ready reads.
 
@@ -84,7 +84,7 @@ This principle applies anywhere you interact with Tokio. If you know you will se
 
 The Tokio runtime schedules work on workers: dedicated threads that poll ready tasks. Workers scale across cores, but some runtime resources still require shared coordination.
 
-The blocking pool is runtime-wide.[^blocking-queue] Under high enough rates, the queueing and synchronization around `spawn_blocking` can become visible in flamegraphs. I have seen negative performance effects at roughly 50,000 blocking tasks per second on a 32-core host; your mileage will vary. `spawn_blocking` is not a magic fix for every piece of blocking or CPU-heavy code. For short, bounded work, it may be faster to let Tokio's workers and work stealing handle it—but benchmark your workload.
+The blocking pool is currently[^blocking-queue] a global resource. Under high enough rates, pushing work onto the blocking queue becomes a bottleneck and `spawn_blocking` can become visible in flamegraphs. I have seen negative performance effects at roughly 50,000 blocking tasks per second on a 32-core host; your mileage will vary. `spawn_blocking` is not a magic fix for every piece of blocking or CPU-heavy code. For short, bounded work, it may be faster to let Tokio's workers and work stealing handle it, but, as always "it depends."
 
 Tokio also has a global task queue. Tasks land there when local worker queues overflow, which is usually rare, or when work is scheduled from outside a runtime worker, which can be common in some applications. One example is a channel whose sender runs on a non-Tokio thread.
 
