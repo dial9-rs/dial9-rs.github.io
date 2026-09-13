@@ -17,9 +17,9 @@ This post lays out some general principles and covers exceptions where I can. It
 
 ### First, determine whether you have a problem
 
-If you start looking for red flags in a Tokio application, you will find them. Almost every real application I have seen has polls [(the time between `.await` when the code yields back to the runtime)](#appendix-a-mental-model-for-tokio-in-four-bullet-points) much longer than the 10-100 microseconds Alice recommends in her excellent post [What is Blocking?](https://ryhl.io/blog/async-what-is-blocking/). These problems may or may not affect the application metrics or behavior you actually care about (see: [long polls can be fine sometimes](#blocking-the-executor-can-be-fine-sometimes)). It is important to work backward from a real metric you are trying to improve. For example, an application can have long polls that are completely benign; "fixing" them will not measurably impact user-facing metrics.
+If you start looking for red flags in a Tokio application, you will find them. Almost every real application I have seen has polls [(the time between `.await` when the code yields back to the runtime)](#appendix-a-mental-model-for-tokio-in-four-bullet-points) much longer than the 10-100 microseconds Alice Rhyl recommends in her excellent post [What is Blocking?](https://ryhl.io/blog/async-what-is-blocking/). These problems may or may not affect the application metrics or behavior you actually care about (see: [long polls can be fine sometimes](#blocking-the-executor-can-be-fine-sometimes)). It is important to work backward from a real metric you are trying to improve. For example, an application can have long polls that are completely benign; "fixing" them will not measurably impact user-facing metrics.
 
-In the overwhelming majority of problems I have come across, the issue was in the application code itself, often in the interaction between multiple components of a distributed system (and not actually in Tokio). dial9 has given a lot of visibility into Tokio; at least as often as it finds a Tokio problem, it actually clearly demonstrates the _lack_ of one (which gives folks the confidence to search elsewhere!) Of course, sometimes it is a Tokio problem.
+In the overwhelming majority of problems I have come across, the issue was in the application code itself, often in the interaction between multiple components of a distributed system (and not actually in Tokio). dial9 has given a lot of visibility into Tokio; at least as often as it finds a Tokio problem, it actually clearly demonstrates the _lack_ of one (which gives folks the confidence to search elsewhere). Of course, sometimes it is a Tokio problem.
 
 In terms of Tokio metrics, the most useful is the recently added [schedule latency histogram](https://docs.rs/tokio/latest/tokio/runtime/struct.RuntimeMetrics.html#method.schedule_latency_histogram_bucket_range). Schedule latency is the amount of time between your task being ready to run (e.g. because the socket has data) and Tokio actually polling the future. Although this won't tell you what the cause is, most issues interacting with Tokio result in high scheduling latency.
 
@@ -101,7 +101,7 @@ One of the easiest ways to stall an entire runtime is to block a worker on a con
 
 Things like a metrics registry stored behind a mutex or read-write lock are especially susceptible to this issue. If a flush holds the lock while doing expensive work, every Tokio worker may eventually schedule a task that tries to record a metric and blocks on the same lock. Stealing becomes impossible because every worker is stuck!
 
-Keep critical sections in async applications extremely short (e.g a single hashmap update). RWLocks are almost never the right primitive to use as they still create contention on atomics, even for the read path. Do not hold the lock while flushing, performing I/O, or awaiting another future. 
+Keep critical sections in async applications extremely short (e.g., a single hashmap update). RWLocks are almost never the right primitive to use as they still create contention on atomics, even for the read path. Do not hold the lock while flushing, performing I/O, or awaiting another future. 
 
 `tokio::sync::Mutex` trades one issue for another: Tokio Mutexes are much more expensive to lock, susceptible to subtle issues like [FutureLock](https://rfd.shared.oxide.computer/rfd/0609) and are really only appropriate if the critical section is multiple milliseconds.
 
@@ -162,9 +162,11 @@ The strongest isolation comes from assigning work to separate runtimes and pinni
 
 You can also set OS-level niceness when the runtime threads start. See dial9's [multiple-runtime example](https://github.com/dial9-rs/dial9/blob/main/dial9/examples/multi_runtime.rs) and Tokio's [`on_thread_start`](https://docs.rs/tokio/latest/tokio/runtime/struct.Builder.html#method.on_thread_start) hook.
 
+At TokioConf the general impression from most talks is that folks ended up moving to a solution with at least two runtimes.
+
 ### Spin to keep control
 
-> This is a very advanced tactic for chasing latency measured in microseconds. I don't reccommend reaching for this first, but it can definitely work.
+> This is a very advanced tactic for chasing latency measured in microseconds. I don't recommend reaching for this first, but it can definitely work.
 
 Every time you yield back to the Tokio scheduler—or Tokio parks a worker thread and yields it to the operating system—you create a chance for that work to be delayed when it wakes again.
 
