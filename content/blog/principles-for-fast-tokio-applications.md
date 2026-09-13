@@ -93,13 +93,15 @@ Tokio also has a global task queue. Tasks land there when local worker queues ov
 - Runtime-wide operations such as `spawn_blocking` are prominent in flamegraphs.
 - The global queue is consistently deep. In a healthy application it should generally stay close to empty; in a saturated application, it can take a long time to drain.
 
-### Be extremely careful with blocking mutexes
+### Be extremely careful with mutexes
 
-One of the easiest ways to stall an entire runtime is to block a worker on a contended synchronous mutex and then hold that mutex for a long time.
+One of the easiest ways to stall an entire runtime is to block a worker on a contended mutex.
 
-A pattern I have seen in practice is a metrics registry stored behind a mutex or read-write lock. If a flush holds the lock while doing expensive work, every Tokio worker may eventually schedule a task that tries to record a metric and blocks on the same lock. The runtime can grind to a halt as its workers become blocked. In severe cases, no worker remains available to drive I/O.
+Things like a metrics registry stored behind a mutex or read-write lock are especially susceptible to this issue. If a flush holds the lock while doing expensive work, every Tokio worker may eventually schedule a task that tries to record a metric and blocks on the same lock. Stealing becomes impossible because every worker is stuck!
 
-Keep synchronous-mutex critical sections in async applications extremely short and bounded. Do not hold the lock while flushing, performing I/O, or awaiting another future. An async-aware mutex prevents the worker thread itself from blocking, but it does not make long or highly contended critical sections cheap.
+Keep critical sections in async applications extremely short (e.g a single hashmap update). RWLocks are almost never the right primitive to use as they still create contention on atomics, even for the read path. Do not hold the lock while flushing, performing I/O, or awaiting another future. 
+
+`tokio::sync::Mutex` trades one issue for another: Tokio Mutexes are much more expensive to lock, susceptible to subtle issues like [FutureLock](https://rfd.shared.oxide.computer/rfd/0609) and are really only appropriate if the critical section is multiple milliseconds.
 
 **How do I know if I have this problem?**
 
