@@ -103,9 +103,11 @@ One of the easiest ways to stall an entire runtime is to block a worker on a con
 
 Things like a metrics registry stored behind a mutex or read-write lock are especially susceptible to this issue. If a flush holds the lock while doing expensive work, every Tokio worker may eventually schedule a task that tries to record a metric and blocks on the same lock. Stealing becomes impossible because every worker is stuck!
 
-Keep critical sections in async applications extremely short (e.g., a single hashmap update). `RWLock`s are almost never the right primitive to use as they still create contention on atomics, even for the read path. Do not hold the lock while flushing, performing I/O, or awaiting another future. 
+Keep critical sections in async applications extremely short (e.g., a single hashmap update). `RWLock`s are almost never the right primitive to use as they still create contention on atomics, even for the read path. Do not hold the lock while flushing, performing I/O, or awaiting another future. A common trick is to lock the mutex, then clone the data. If you can tolerate a stale read (and don't need to write data back), this can bound the time spent holding the mutex.
 
 `tokio::sync::Mutex` trades one issue for another: Tokio Mutexes are much more expensive to lock, are susceptible to subtle issues like [FutureLock](https://rfd.shared.oxide.computer/rfd/0609), and are really only appropriate if the critical section lasts multiple milliseconds.
+
+Instead of Mutexes, consider other synchronization primitives like [channels](https://docs.rs/tokio/latest/tokio/sync/index.html). One task can own the shared data, and messages coming from the channel denote mutations. These often rely on rearchitecting your application but can simplify and improve performance. For a detailed guide to using channels to implement the actor pattern see [Actors With Tokio](https://ryhl.io/blog/actors-with-tokio/), also by Alice Ryhl. Even when using a channel, you still need to consider amortizing or batching access to the channel for maximum performance. The channel itself becomes the [global resource](#beware-global-resources).
 
 **How do I know if I have this problem?**
 
@@ -182,3 +184,6 @@ For extremely latency-sensitive work, one option is to intentionally spin for a 
 - When one worker's queue backs up, another worker can steal work from it—if the runtime detects the imbalance and another worker has capacity.
 
 [^blocking-queue]: [Tokio 1.52.0](https://github.com/tokio-rs/tokio/releases/tag/tokio-1.52.0) briefly shipped a sharded blocking queue, but [1.52.1 reverted it](https://github.com/tokio-rs/tokio/releases/tag/tokio-1.52.1) after a regression that could cause `spawn_blocking` to hang. Tokio [PR #8337](https://github.com/tokio-rs/tokio/pull/8337) later re-landed the sharded queue as an unstable feature that is disabled by default.
+
+## Change Log
+- 2026-09-15: Update Mutexes section to call out alternative synchronization primitives. Thanks [Saghm Rossi](https://saghm.com/)!
