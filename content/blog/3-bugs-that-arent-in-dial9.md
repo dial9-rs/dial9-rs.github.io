@@ -14,7 +14,7 @@ We use AI to help build dial9, but this presents a challenge: today's models are
 
 ## FxHash
 
-dial9 uses a fast but cryptographically insecure algorithm called FxHash for certain encoding operations. Rather than adding a dependency, the the agent to inlined the code from the [FxHash crate](https://crates.io/crates/fxhash) because we only needed ~10 lines:
+dial9 uses a fast but cryptographically insecure algorithm called FxHash for certain encoding operations. Rather than adding a dependency, the agent inlined the code from the [FxHash crate](https://crates.io/crates/fxhash) because we only needed ~10 lines:
 
 > This was definitely an error on my part; this whole episode would have been avoided by `rustc-hash = 2`.
 
